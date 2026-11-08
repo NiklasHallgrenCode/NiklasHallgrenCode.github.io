@@ -105,7 +105,7 @@ footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line);
 <div class="ward-tools" role="group" aria-label="Ward filters">
   <div><span class="tool-lbl">They are</span><span class="seg" id="f-side"><button type="button" data-v="radiant">Radiant</button><button type="button" data-v="dire">Dire</button></span></div>
   <div><span class="tool-lbl">Ward</span><span class="seg" id="f-type"><button type="button" data-v="obs">Observers</button><button type="button" data-v="sen">Sentries</button></span></div>
-  <div class="time-ctl"><span class="tool-lbl">Time</span><div class="range" id="f-time"><div class="track"><div class="fill" id="t-fill"></div></div><input type="range" id="t-from" min="-120" max="3600" step="30" value="-120" aria-label="Placed from (game time)"><input type="range" id="t-to" min="-120" max="3600" step="30" value="3600" aria-label="Placed until (game time)"><div class="ticks" id="t-ticks" aria-hidden="true"></div></div><output id="t-label" for="t-from t-to"></output><button type="button" class="reset" id="t-reset">Whole game</button></div>
+  <div class="time-ctl"><span class="tool-lbl">Time</span><div class="range" id="f-time"><div class="track"><div class="fill" id="t-fill"></div></div><input type="range" id="t-from" min="-120" max="3600" step="60" value="-120" aria-label="Placed from (game time)"><input type="range" id="t-to" min="-120" max="3600" step="60" value="3600" aria-label="Placed until (game time)"><div class="ticks" id="t-ticks" aria-hidden="true"></div></div><output id="t-label" for="t-from t-to"></output><button type="button" class="reset" id="t-reset">Whole game</button></div>
   <div><span class="tool-lbl">Show</span><span class="seg" id="f-view"><button type="button" data-v="spots">Recurring spots</button><button type="button" data-v="all">Every ward</button></span></div>
 </div>
 
@@ -292,6 +292,7 @@ for (const [gid, key] of [['f-side', 'side'], ['f-type', 'type'], ['f-view', 'vi
   document.querySelectorAll('#' + gid + ' button').forEach(b => b.addEventListener('click', () => { WS[key] = b.dataset.v; hideTip(); wardRender(); saveWS(); }));
 }
 try { const saved = JSON.parse(localStorage.getItem('ls-wards-2') || 'null'); if (saved) Object.assign(WS, saved); } catch (e) {}
+WS.t0 = Math.round(WS.t0 / 60) * 60; WS.t1 = Math.round(WS.t1 / 60) * 60;
 syncSlider();
 wardRender();
 </script>
