@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Lake Stoug Ward Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: one screen-wide tool — filters on top, map left, routine + recurring spots right. */
+:root {
+  --bg: #f2f4f5; --surface: #fbfcfc; --surface-2: #e9edef; --ink: #12181d; --ink-2: #47525c; --muted: #76818b; --line: #d9dfe3;
+  --accent: #8d620e; --obs: #f5c518; --sen: #3f9cf2; --mark-ink: #0b0b0b;
+  --f-display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0d1114; --surface: #151a1e; --surface-2: #1d242a; --ink: #e7ebee; --ink-2: #b2bcc5; --muted: #87929c; --line: #29323a; --accent: #e3b350; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 40px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; }
+a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line); }
+a:hover { text-decoration-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+h1, h3 { margin: 0; text-wrap: balance; }
+h3 { font-size: 18px; line-height: 1.3; }
+p { margin: 0; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.small { font-size: 14px; color: var(--ink-2); }
+header { padding-block: 32px 18px; display: grid; gap: 10px; }
+header h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(44px, 8vw, 84px); line-height: .9; text-transform: uppercase; }
+header .lede { color: var(--ink-2); max-width: 70ch; }
+.ward-tools { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding-block: 14px; border-block: 1px solid var(--line); margin-bottom: 18px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-2); background: transparent; border: 0; padding: 7px 12px; cursor: pointer; border-right: 1px solid var(--line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:hover:not([aria-pressed="true"]) { background: var(--surface-2); }
+.tool-lbl { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.ward-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .ward-layout { grid-template-columns: minmax(0, 1fr); } }
+.mapbox { position: relative; width: 100%; max-width: 680px; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #2b3a2a; }
+.mapbox img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.mapbox svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mapbox .corner { position: absolute; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,.6); color: #fff; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); align-items: center; }
+.legend .k { display: inline-flex; align-items: center; gap: 6px; }
+.legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.grid-l { stroke: var(--line); stroke-width: 1; }
+.spot-list { display: grid; border-top: 1px solid var(--line); min-width: 0; }
+.spot { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 2px 10px; padding: 9px 4px; border-bottom: 1px solid var(--line); border-radius: 6px; }
+.spot:hover, .spot.hl { background: var(--surface-2); }
+.spot .num { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--mark-ink); border: 2px solid var(--mark-ink); }
+.spot .nm { font-weight: 600; font-size: 15px; line-height: 1.3; }
+.spot .det { grid-column: 2; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.spot .tl { grid-column: 2; }
+.routine { display: grid; gap: 6px; }
+.routine ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
+.routine li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 15px; }
+.routine li .mono { font-family: var(--f-mono); font-size: 13px; color: var(--accent); font-weight: 500; padding-top: 2px; }
+@media (max-width: 480px) { .routine li { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); display: grid; gap: 6px; max-width: 90ch; }
+#tip { position: fixed; z-index: 50; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px; box-shadow: 0 6px 20px rgba(0,0,0,.18); max-width: 280px; display: grid; gap: 3px; }
+#tip[hidden] { display: none; }
+#tip .v { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+#tip .r { display: flex; gap: 6px; align-items: center; color: var(--ink-2); }
+#tip .r i { width: 12px; height: 2px; display: inline-block; border-radius: 1px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">E-Sparven Season 6 · Lake Stoug</div>
+  <h1>Where they ward</h1>
+  <p class="lede">All 613 wards Lake Stoug placed in their 10 league games (9 Aug – 25 Oct 2026, patch 7.41): 211 observers and 402 sentries. Pick the side they are on, the ward type and a time window. Recurring spots group placements within about 575 units and need at least two games. Hover a spot or a row for details.</p>
+</header>
+
+<div class="ward-tools" role="group" aria-label="Ward filters">
+  <div><span class="tool-lbl">They are</span><span class="seg" id="f-side"><button type="button" data-v="radiant">Radiant</button><button type="button" data-v="dire">Dire</button></span></div>
+  <div><span class="tool-lbl">Ward</span><span class="seg" id="f-type"><button type="button" data-v="obs">Observers</button><button type="button" data-v="sen">Sentries</button></span></div>
+  <div><span class="tool-lbl">Time</span><span class="seg" id="f-phase"><button type="button" data-v="all">All</button><button type="button" data-v="pre">Pre-horn</button><button type="button" data-v="0-10">0–10</button><button type="button" data-v="10-20">10–20</button><button type="button" data-v="20-30">20–30</button><button type="button" data-v="30+">30+</button></span></div>
+  <div><span class="tool-lbl">Show</span><span class="seg" id="f-view"><button type="button" data-v="spots">Recurring spots</button><button type="button" data-v="all">Every ward</button></span></div>
+</div>
+
+<main class="ward-layout">
+  <div style="display:grid; gap:10px; min-width:0">
+    <div class="mapbox">
+      <img src="map.webp" alt="Dota 2 minimap">
+      <svg id="wardsvg" viewBox="0 0 127 127" preserveAspectRatio="none" aria-label="Ward positions"></svg>
+      <span class="corner" style="left:8px; bottom:8px">Radiant base</span>
+      <span class="corner" style="right:8px; top:8px">Dire base</span>
+    </div>
+    <div class="legend" id="ward-legend"></div>
+    <p class="small" id="ward-count"></p>
+  </div>
+  <div style="display:grid; gap:16px; min-width:0">
+    <div class="routine" id="routine"></div>
+    <div>
+      <h3 style="margin-bottom:6px">Recurring spots <span class="small" id="spot-sub"></span></h3>
+      <div class="spot-list" id="spot-list"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>Data: league game list from the Steam Web API (league 19868), match details from OpenDota's parsed replays. A ward counts as dewarded when it disappeared before its full duration and an enemy hero got the kill.</p>
+  <p>Map image from OpenDota's 7.40 minimap (odota/web). Dota 2 is a trademark of Valve Corporation; this page is not affiliated with Valve.</p>
+</footer>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"wards":[[1,0,408,132.7,125.5,0,360,0,null,0],[1,1,411,131.1,121.8,0,387,1,"Ring Master",0],[1,0,552,161.8,101.9,2,360,0,null,0],[1,0,757,96.5,130.5,2,360,0,null,0],[1,1,29,168.4,99.5,2,420,0,null,0],[1,1,55,159.2,90.5,2,74,1,"Ring Master",0],[1,1,688,179.4,91.4,2,420,0,null,0],[1,1,760,96.6,130.1,2,411,1,"Clockwerk",0],[1,1,938,131.3,126.3,2,128,1,"Clockwerk",0],[1,1,2464,108.4,141.4,2,null,0,null,0],[1,0,-59,113,130,4,361,0,null,0],[1,0,541,69.4,153.6,4,360,0,null,0],[1,0,925,161.4,71.3,4,360,0,null,0],[1,0,955,133.4,88.3,4,360,0,null,0],[1,0,1035,161.8,102,4,360,0,null,0],[1,0,1123,111.8,104.7,4,360,0,null,0],[1,0,1165,137.2,124.3,4,360,0,null,0],[1,0,1278,149.9,116,4,360,0,null,0],[1,0,1385,116,144.1,4,360,0,null,0],[1,0,1493,83.2,130.3,4,360,0,null,0],[1,0,1646,92.4,105.4,4,246,1,"Ring Master",0],[1,0,1753,118,94.2,4,163,1,"Lina",0],[1,0,1853,93.3,88.5,4,361,0,null,0],[1,0,2198,136.1,156,4,361,0,null,0],[1,0,2227,72.5,165.3,4,360,0,null,0],[1,0,2307,118.2,94,4,null,0,null,0],[1,0,2539,84.6,82.5,4,32,1,"Lina",0],[1,1,13,101.7,166.5,4,421,0,null,0],[1,1,632,82.3,157.5,4,420,0,null,0],[1,1,945,159.1,97,4,75,1,"Ring Master",0],[1,1,1024,172.9,102.4,4,420,0,null,0],[1,1,1094,154.8,80.4,4,420,0,null,0],[1,1,1157,136.6,128.4,4,420,0,null,0],[1,1,1196,120.4,133.4,4,420,0,null,0],[1,1,1275,153,121.9,4,420,0,null,0],[1,1,1291,131,120.3,4,420,0,null,0],[1,1,1383,119.7,148.9,4,420,0,null,0],[1,1,1487,96.2,131.6,4,420,0,null,0],[1,1,1512,80.2,143.7,4,22,1,"npc_dota_goodguys_tower1_top",0],[1,1,1587,106,163.2,4,420,0,null,0],[1,1,1639,93.8,119.8,4,420,0,null,0],[1,1,1673,117.3,134.8,4,420,0,null,0],[1,1,1699,142.7,108.2,4,420,0,null,0],[1,1,1741,117.7,94.5,4,176,1,"Lina",0],[1,1,1841,96.7,79.8,4,372,1,"Ring Master",0],[1,1,1852,94.7,89,4,420,0,null,0],[1,1,1960,67.9,119.6,4,420,0,null,0],[1,1,1967,77,103.7,4,293,1,"Ring Master",0],[1,1,2091,152.8,123.8,4,420,0,null,0],[1,1,2195,143.3,157.4,4,421,0,null,0],[1,1,2278,142.3,107.9,4,420,0,null,0],[1,1,2304,124.5,97.1,4,420,0,null,0],[1,1,2354,152.5,110.7,4,null,0,null,0],[1,1,2440,131.8,114.5,4,null,0,null,0],[1,1,2482,94.4,119.9,4,null,0,null,0],[1,1,2496,93.5,97.4,4,null,0,null,0],[1,1,2510,89.2,92.3,4,null,0,null,0],[1,0,440,124.9,129.8,0,243,1,"Ring Master",1],[1,1,441,121.4,128.3,0,239,1,"Ring Master",1],[1,0,-55,113.2,129.9,4,360,0,null,1],[1,0,411,70.1,153.8,4,360,0,null,1],[1,0,640,133.5,87.9,4,360,0,null,1],[1,0,772,108.1,143.7,4,360,0,null,1],[1,0,862,111.5,104.6,4,360,0,null,1],[1,0,1105,118,93.9,4,68,1,"Sniper",1],[1,0,1223,80.4,139.1,4,361,0,null,1],[1,0,1239,89.3,132.3,4,360,0,null,1],[1,0,1453,133.4,87.9,4,360,0,null,1],[1,0,1462,146.3,98.4,4,360,0,null,1],[1,0,1670,111.3,104.7,4,360,0,null,1],[1,0,1890,81.8,134.9,4,360,0,null,1],[1,0,1968,130.8,109.5,4,360,0,null,1],[1,0,2221,146.5,98.1,4,360,0,null,1],[1,0,2359,93.9,120.1,4,360,0,null,1],[1,0,2379,81,135.4,4,200,1,"npc_dota_creep_goodguys_melee",1],[1,0,2505,77.3,101.4,4,360,0,null,1],[1,0,2645,163.8,133.8,4,361,0,null,1],[1,0,2778,150,115.6,4,null,0,null,1],[1,0,2848,141.8,102.4,4,null,0,null,1],[1,0,2958,114.5,67.6,4,null,0,null,1],[1,0,3017,117.7,93.9,4,null,0,null,1],[1,1,14,101.6,166.2,4,102,1,"Spirit Breaker",1],[1,1,192,101.6,166.6,4,420,0,null,1],[1,1,589,174.6,100.8,4,420,0,null,1],[1,1,631,157.5,95.1,4,420,0,null,1],[1,1,694,82.5,159,4,164,1,"Spirit Breaker",1],[1,1,847,134.1,103.5,4,336,1,"Sniper",1],[1,1,892,91.7,149.8,4,267,1,"Ring Master",1],[1,1,930,79.6,155.8,4,420,0,null,1],[1,1,1103,118.2,94,4,71,1,"Sniper",1],[1,1,1190,90.3,142.8,4,420,0,null,1],[1,1,1207,96.3,131.5,4,420,0,null,1],[1,1,1419,145.8,80.3,4,420,0,null,1],[1,1,1431,132.4,78,4,420,0,null,1],[1,1,1576,153.1,123.1,4,420,0,null,1],[1,1,1587,141.5,106.9,4,420,0,null,1],[1,1,1650,117.9,94.2,4,420,0,null,1],[1,1,1658,128.2,113.3,4,420,0,null,1],[1,1,1688,110.2,115.4,4,420,0,null,1],[1,1,1871,95.6,131.5,4,101,1,"Ring Master",1],[1,1,1912,81.1,107.1,4,20,1,"npc_dota_creep_goodguys_melee",1],[1,1,1937,106.9,138.4,4,420,0,null,1],[1,1,1977,144.3,89.8,4,420,0,null,1],[1,1,2042,104.3,80.9,4,420,0,null,1],[1,1,2218,154.2,100.4,4,420,0,null,1],[1,1,2260,152.6,121.8,4,332,1,"Spirit Breaker",1],[1,1,2358,91.8,118.2,4,420,0,null,1],[1,1,2366,96.8,131.2,4,420,0,null,1],[1,1,2399,111.2,119.7,4,420,0,null,1],[1,1,2492,78.8,108.2,4,420,0,null,1],[1,1,2644,160.2,135.6,4,420,0,null,1],[1,1,2770,152.9,121.6,4,421,0,null,1],[1,1,2803,160.3,95.3,4,420,0,null,1],[1,1,2841,143.7,108.6,4,420,0,null,1],[1,1,2916,133.5,102.2,4,null,0,null,1],[1,1,2921,118.2,94,4,null,0,null,1],[1,1,2960,114.5,68.1,4,null,0,null,1],[1,1,2975,102.3,80.6,4,46,1,"Phantom Lancer",1],[1,1,3001,97.8,81.3,4,16,1,"Phantom Lancer",1],[1,0,464,161.6,101.7,2,360,0,null,1],[1,1,45,158.2,88.8,2,4,1,"Ring Master",1],[1,1,49,168.3,99.3,2,420,0,null,1],[1,1,2213,144.5,108.8,2,420,0,null,1],[0,0,-58,137.1,124.1,4,360,0,null,2],[0,0,29,152.2,96.2,4,360,0,null,2],[0,0,364,168.5,106.6,4,361,0,null,2],[0,0,773,79,185.6,4,360,0,null,2],[0,0,782,101.8,189.9,4,360,0,null,2],[0,0,928,136.3,108.2,4,360,0,null,2],[0,0,987,175,118.2,4,360,0,null,2],[0,0,1301,167.4,126,4,360,0,null,2],[0,0,1391,101.9,133.6,4,360,0,null,2],[0,0,1407,110.2,156,4,20,1,"Shadow Demon",2],[0,0,1538,136.1,155.8,4,216,1,"Mirana",2],[0,0,1549,137.3,186,4,360,0,null,2],[0,0,1742,129.4,135,4,45,1,"Shadow Demon",2],[0,0,1831,163.9,133.9,4,360,0,null,2],[0,0,2030,93.9,120,4,360,0,null,2],[0,0,2050,115.7,143.8,4,360,0,null,2],[0,0,2152,116.2,125.3,4,193,1,"Shadow Demon",2],[0,0,2418,118,94.1,4,360,0,null,2],[0,0,2608,94,119.9,4,127,1,"Shadow Demon",2],[0,0,2723,93.3,98.1,4,89,1,"npc_dota_creep_badguys_flagbearer_upgraded",2],[0,0,2836,94.2,97.3,4,null,0,null,2],[0,1,378,161.9,131.7,4,420,0,null,2],[0,1,625,175.6,102.9,4,420,0,null,2],[0,1,752,99.6,160.2,4,420,0,null,2],[0,1,913,129.4,122.2,4,420,0,null,2],[0,1,941,141.9,101.1,4,420,0,null,2],[0,1,964,151.7,121.6,4,291,1,"Mirana",2],[0,1,988,175.4,118,4,420,0,null,2],[0,1,1016,80.3,154.9,4,420,0,null,2],[0,1,1258,186.1,119.3,4,421,0,null,2],[0,1,1294,164,133.9,4,233,1,"Mirana",2],[0,1,1318,181.4,83.8,4,421,0,null,2],[0,1,1360,153,123,4,181,1,"Mirana",2],[0,1,1387,96.4,131.5,4,421,0,null,2],[0,1,1405,106.7,149.5,4,420,0,null,2],[0,1,1536,135.8,156,4,220,1,"Mirana",2],[0,1,1592,114,161.4,4,420,0,null,2],[0,1,1720,111,115.5,4,420,0,null,2],[0,1,1740,125.1,139.1,4,420,0,null,2],[0,1,1757,121.9,151.4,4,420,0,null,2],[0,1,1828,164.1,134,4,420,0,null,2],[0,1,1844,152.9,121.9,4,420,0,null,2],[0,1,1876,151.8,137.3,4,420,0,null,2],[0,1,1887,171.9,123.5,4,420,0,null,2],[0,1,2006,94,88.4,4,420,0,null,2],[0,1,2028,93.7,120,4,420,0,null,2],[0,1,2044,110,144.6,4,421,0,null,2],[0,1,2150,114.3,125.6,4,420,0,null,2],[0,1,2192,125.7,125,4,150,1,"Shadow Demon",2],[0,1,2199,139.9,139.7,4,420,0,null,2],[0,1,2289,149.4,176.9,4,420,0,null,2],[0,1,2388,84.7,100.4,4,420,0,null,2],[0,1,2415,111.9,96.9,4,420,0,null,2],[0,1,2604,91.6,118.1,4,242,1,"Mirana",2],[0,1,2663,96.4,92.6,4,null,0,null,2],[0,1,2695,68.7,105.2,4,null,0,null,2],[0,1,2852,81.3,101.4,4,null,0,null,2],[0,1,2878,96.3,78.1,4,null,0,null,2],[0,1,2883,83,79.6,4,null,0,null,2],[0,1,2888,73.5,91.4,4,null,0,null,2],[0,1,33,99.7,168.7,2,69,1,"Shadow Demon",2],[0,1,47,90.6,155.8,2,16,1,"Shadow Demon",2],[0,1,93,87.3,155.6,2,273,1,"Shadow Demon",2],[0,1,965,92.6,163.2,2,420,0,null,2],[0,0,493,124.9,129.6,0,98,1,"Shadow Demon",2],[0,1,493,121.4,128.3,0,97,1,"Shadow Demon",2],[1,1,348,120.8,127.1,0,97,1,"Shadow Demon",3],[1,0,36,152.4,96.2,2,360,0,null,3],[1,1,46,158.4,91.3,2,7,1,"Shadow Demon",3],[1,1,50,168.3,99.5,2,276,1,"Shadow Demon",3],[1,1,391,169.3,96.6,2,420,0,null,3],[1,1,461,156.3,90,2,420,0,null,3],[1,1,812,132.9,103,2,420,0,null,3],[1,0,-56,112.7,129.9,4,360,0,null,3],[1,0,238,158.7,81,4,27,1,"npc_dota_creep_goodguys_ranged",3],[1,0,340,70,153.8,4,361,0,null,3],[1,0,559,172.4,81.6,4,360,0,null,3],[1,0,732,101.6,134.1,4,59,1,"Shadow Demon",3],[1,0,875,83.2,130.6,4,360,0,null,3],[1,0,976,94,120.5,4,97,1,"Shadow Demon",3],[1,0,1047,143.2,100.9,4,360,0,null,3],[1,0,1499,91.3,110.4,4,360,0,null,3],[1,0,1517,118.3,94.1,4,360,0,null,3],[1,0,1702,67.7,119.8,4,361,0,null,3],[1,0,1712,84.7,103.2,4,360,0,null,3],[1,0,1931,129.1,118.4,4,360,0,null,3],[1,0,1947,115.6,144.3,4,360,0,null,3],[1,0,1985,97.3,155.6,4,360,0,null,3],[1,0,2134,90.3,145.5,4,291,1,"Earth Spirit",3],[1,0,2240,92.5,98.7,4,null,0,null,3],[1,0,2354,117.9,94.1,4,null,0,null,3],[1,0,2484,99.8,78.4,4,null,0,null,3],[1,1,28,101.9,166.5,4,420,0,null,3],[1,1,558,173,82.1,4,420,0,null,3],[1,1,742,100.9,129,4,51,1,"Shadow Demon",3],[1,1,819,131,122.3,4,420,0,null,3],[1,1,871,90.6,138.7,4,420,0,null,3],[1,1,912,119.7,123.8,4,266,1,"Shadow Demon",3],[1,1,946,82.6,159.3,4,420,0,null,3],[1,1,983,77.8,113.7,4,420,0,null,3],[1,1,1049,143.1,107.9,4,421,0,null,3],[1,1,1065,158.1,97.3,4,420,0,null,3],[1,1,1202,106.9,163.8,4,420,0,null,3],[1,1,1280,124.8,75,4,129,1,"Nyx Assassin",3],[1,1,1380,115.2,116.5,4,420,0,null,3],[1,1,1390,121.8,100.1,4,420,0,null,3],[1,1,1409,134,99.3,4,420,0,null,3],[1,1,1484,95.8,131.5,4,301,1,"Nyx Assassin",3],[1,1,1491,89.9,120.5,4,283,1,"Nyx Assassin",3],[1,1,1505,103.5,119.7,4,299,1,"Nyx Assassin",3],[1,1,1574,142.7,112.6,4,420,0,null,3],[1,1,1658,105.7,98.7,4,420,0,null,3],[1,1,1704,67.4,119.5,4,420,0,null,3],[1,1,1946,110.5,145.1,4,420,0,null,3],[1,1,1983,100.5,153.2,4,420,0,null,3],[1,1,2076,92.1,117.4,4,420,0,null,3],[1,1,2112,107.6,112.8,4,null,0,null,3],[1,1,2133,93.9,145.6,4,null,0,null,3],[1,1,2225,87.5,101.6,4,null,0,null,3],[1,1,2263,101.3,101.5,4,null,0,null,3],[1,1,2273,117.7,94.3,4,null,0,null,3],[1,1,2439,104,82.1,4,null,0,null,3],[1,1,2442,115.5,77.1,4,null,0,null,3],[1,1,28,168.2,99.8,2,421,0,null,4],[1,1,82,159.2,90.4,2,225,1,"Jakiro",4],[1,0,-57,113,130,4,360,0,null,4],[1,0,184,82.6,134.3,4,360,0,null,4],[1,0,530,70.5,153.6,4,360,0,null,4],[1,0,876,174.5,85.8,4,360,0,null,4],[1,0,923,118.2,94.1,4,360,0,null,4],[1,0,972,82,134.3,4,360,0,null,4],[1,0,1069,69.1,119.9,4,64,1,"Tidehunter",4],[1,0,1133,94.2,120,4,99,1,"Hoodwink",4],[1,0,1247,138,63.6,4,360,0,null,4],[1,0,1337,118.2,93.8,4,122,1,"Jakiro",4],[1,0,1580,132.5,96.4,4,204,1,"Hoodwink",4],[1,0,1652,118.1,93.9,4,125,1,"Hoodwink",4],[1,0,1670,99.1,87.5,4,31,1,"Jakiro",4],[1,0,2065,133.4,88.1,4,184,1,"Hoodwink",4],[1,0,2176,136,155.9,4,null,0,null,4],[1,0,2200,163.9,133.9,4,188,1,"Hoodwink",4],[1,0,2221,149.6,115.6,4,133,1,"Hoodwink",4],[1,0,2286,125.7,107.8,4,51,1,"Hoodwink",4],[1,1,11,101.8,166.3,4,420,0,null,4],[1,1,365,82.1,158.1,4,420,0,null,4],[1,1,624,81,149.2,4,420,0,null,4],[1,1,644,95.6,137.1,4,190,1,"Tidehunter",4],[1,1,684,83.3,136.5,4,420,0,null,4],[1,1,767,101.7,166.4,4,420,0,null,4],[1,1,875,175.3,85.8,4,420,0,null,4],[1,1,912,131.4,120.4,4,351,1,"Jakiro",4],[1,1,921,123.6,98.2,4,420,0,null,4],[1,1,951,109,112.4,4,302,1,"Jakiro",4],[1,1,967,96.7,131.7,4,276,1,"Jakiro",4],[1,1,1037,74,128.2,4,421,0,null,4],[1,1,1079,90.5,118.7,4,156,1,"Hoodwink",4],[1,1,1125,94,119.9,4,104,1,"Hoodwink",4],[1,1,1250,139.8,65.1,4,420,0,null,4],[1,1,1266,178.8,73.4,4,420,0,null,4],[1,1,1324,146.9,90.9,4,145,1,"Jakiro",4],[1,1,1335,118.2,93.8,4,125,1,"Jakiro",4],[1,1,1363,134.9,104.4,4,11,1,"Hoodwink",4],[1,1,1473,152.9,121.7,4,420,0,null,4],[1,1,1483,135.6,103.6,4,304,1,"Hoodwink",4],[1,1,1507,118.2,94,4,272,1,"Hoodwink",4],[1,1,1617,146,112.8,4,420,0,null,4],[1,1,1680,96.8,83.5,4,18,1,"Jakiro",4],[1,1,1951,166.4,153.8,4,420,0,null,4],[1,1,1955,156.2,162,4,420,0,null,4],[1,1,1996,136.1,103.2,4,46,1,"Hoodwink",4],[1,1,2174,136.1,156,4,null,0,null,4],[1,1,2198,159.9,134,4,192,1,"Hoodwink",4],[1,1,2212,153,121.8,4,147,1,"Hoodwink",4],[1,1,2239,155.7,104.8,4,null,0,null,4],[1,1,2274,136.2,103.2,4,62,1,"Luna",4],[1,1,2288,126.8,113.4,4,52,1,"Hoodwink",4],[1,1,2422,160.5,158.5,4,16,1,"Sand King",4],[1,1,2455,168.3,166.7,4,null,0,null,4],[0,0,386,161.7,101.9,4,360,0,null,5],[0,0,810,101.8,133.3,4,360,0,null,5],[0,0,845,118.2,94.2,4,361,0,null,5],[0,0,994,90.2,146.1,4,361,0,null,5],[0,0,1116,126.1,120.2,4,44,1,"Disruptor",5],[0,0,1214,118.1,94,4,360,0,null,5],[0,0,1245,94.1,119.8,4,360,0,null,5],[0,0,1361,176.3,73.5,4,63,1,"Disruptor",5],[0,0,1506,90.1,145.9,4,360,0,null,5],[0,0,1542,91.9,164.5,4,360,0,null,5],[0,0,1619,118.1,93.9,4,20,1,"Dark Willow",5],[0,0,1685,93.8,119.7,4,360,0,null,5],[0,0,1807,117.8,94,4,76,1,"Disruptor",5],[0,0,1953,117.8,94,4,92,1,"Dark Willow",5],[0,0,2149,76.5,103.9,4,95,1,"Disruptor",5],[0,0,2183,93.8,97.5,4,87,1,"Lina",5],[0,1,118,156.1,89,4,420,0,null,5],[0,1,330,148.9,78.5,4,420,0,null,5],[0,1,455,175.2,87.6,4,420,0,null,5],[0,1,501,173.6,100.8,4,420,0,null,5],[0,1,676,96.6,131.6,4,123,1,"Lina",5],[0,1,689,81.7,155.5,4,420,0,null,5],[0,1,806,96.6,131.6,4,420,0,null,5],[0,1,814,108.5,126.7,4,420,0,null,5],[0,1,848,123.8,98.1,4,359,1,"Night Stalker",5],[0,1,911,146.3,90.6,4,420,0,null,5],[0,1,996,89.4,141.6,4,420,0,null,5],[0,1,1031,109.5,114.3,4,420,0,null,5],[0,1,1111,130.2,123.5,4,119,1,"Disruptor",5],[0,1,1169,101.1,117.4,4,420,0,null,5],[0,1,1216,117.8,93.9,4,360,1,"Dark Willow",5],[0,1,1251,96.8,131,4,420,0,null,5],[0,1,1360,177.5,73.3,4,67,1,"Disruptor",5],[0,1,1485,113.9,109.8,4,163,1,"Lina",5],[0,1,1504,90,140.8,4,420,0,null,5],[0,1,1616,118,94.1,4,24,1,"Dark Willow",5],[0,1,1683,94,119.6,4,402,1,"Disruptor",5],[0,1,1725,97.3,86.2,4,180,1,"Disruptor",5],[0,1,1760,95.9,72.7,4,420,0,null,5],[0,1,1799,117.9,86.6,4,260,1,"Dark Willow",5],[0,1,1845,108.3,114.3,4,420,0,null,5],[0,1,1968,133.5,125.9,4,null,0,null,5],[0,1,2093,88.6,99.8,4,178,1,"Lina",5],[0,1,2097,97,88,4,null,0,null,5],[0,1,2111,94.3,76.5,4,null,0,null,5],[0,1,2147,75.5,102.7,4,116,1,"Disruptor",5],[0,1,2217,67.8,120.8,4,null,0,null,5],[0,0,708,77.9,185.4,2,360,0,null,5],[0,1,26,87.9,155.9,2,420,0,null,5],[0,1,32,98.6,163.6,2,68,1,"Disruptor",5],[0,1,709,78.4,185.4,2,407,1,"Disruptor",5],[1,0,372,113.9,128.7,3,251,1,"Spectre",6],[1,1,364,122.1,127.3,3,98,1,"Ancient Apparition",6],[1,1,38,168.2,99.8,2,421,0,null,6],[1,1,45,159.3,90.4,2,126,1,"Rubick",6],[1,1,320,166.5,89.2,2,420,0,null,6],[1,1,1648,136,156,2,421,0,null,6],[1,0,-49,113.4,130.1,4,360,0,null,6],[1,0,356,71.6,166.1,4,361,0,null,6],[1,0,494,161.6,101.6,4,360,0,null,6],[1,0,576,176.4,82.8,4,360,0,null,6],[1,0,919,149.8,115.9,4,360,0,null,6],[1,0,939,175.3,88.9,4,360,0,null,6],[1,0,1023,81.3,137.4,4,28,1,"Ancient Apparition",6],[1,0,1036,107.8,143.1,4,361,0,null,6],[1,0,1181,125.7,107.9,4,360,0,null,6],[1,0,1206,133.6,87.8,4,305,1,"Ancient Apparition",6],[1,0,1512,170.3,91.2,4,360,0,null,6],[1,0,1528,149.8,115.7,4,360,0,null,6],[1,0,1602,118.6,65.9,4,360,0,null,6],[1,0,1706,118.1,94,4,42,1,"Ancient Apparition",6],[1,0,2026,120.4,107.9,4,360,0,null,6],[1,0,2191,164.1,134.2,4,360,0,null,6],[1,0,2384,137.8,103.9,4,360,0,null,6],[1,0,2468,81,135.1,4,360,0,null,6],[1,0,2595,120.1,107.1,4,null,0,null,6],[1,0,2625,135.7,155.9,4,null,0,null,6],[1,1,19,101.6,166.1,4,420,0,null,6],[1,1,118,92.6,156.5,4,30,1,"Ancient Apparition",6],[1,1,483,174,100.5,4,420,0,null,6],[1,1,532,184.8,90.2,4,420,0,null,6],[1,1,917,153.5,122.5,4,420,0,null,6],[1,1,932,172.6,101,4,420,0,null,6],[1,1,1018,90.2,139.7,4,420,0,null,6],[1,1,1035,107.8,143.2,4,420,0,null,6],[1,1,1091,160.2,106.9,4,420,0,null,6],[1,1,1129,146.4,110,4,420,0,null,6],[1,1,1171,130.4,122.4,4,420,0,null,6],[1,1,1193,134.9,103.6,4,311,1,"Rubick",6],[1,1,1231,178.9,73.2,4,420,0,null,6],[1,1,1282,145.4,90.5,4,236,1,"Ancient Apparition",6],[1,1,1511,170.8,91.7,4,420,0,null,6],[1,1,1525,152.9,121.8,4,421,0,null,6],[1,1,1568,157.2,96.1,4,420,0,null,6],[1,1,1585,145,79.5,4,420,0,null,6],[1,1,1603,117.8,66.3,4,420,0,null,6],[1,1,1617,124.3,94.5,4,134,1,"Ancient Apparition",6],[1,1,1762,151.3,91.2,4,420,0,null,6],[1,1,1951,147.6,157.2,4,420,0,null,6],[1,1,1967,157.6,142.9,4,420,0,null,6],[1,1,2015,118.2,94.1,4,387,1,"Ancient Apparition",6],[1,1,2021,108.5,105.2,4,37,1,"npc_dota_creep_goodguys_melee",6],[1,1,2130,166.1,154.5,4,420,0,null,6],[1,1,2153,167.7,132,4,420,0,null,6],[1,1,2204,154.1,139.5,4,420,0,null,6],[1,1,2247,156.4,162.1,4,420,0,null,6],[1,1,2359,136.2,155.7,4,420,0,null,6],[1,1,2383,142.7,107.5,4,420,0,null,6],[1,1,2452,132.1,121.5,4,420,0,null,6],[1,1,2514,140.7,67,4,420,0,null,6],[1,1,2543,152.7,121.9,4,420,0,null,6],[1,1,2619,120.5,152.7,4,null,0,null,6],[1,1,2701,176.8,72.6,4,null,0,null,6],[1,1,2863,181.2,164.2,4,null,0,null,6],[0,1,7,98.5,163.6,2,20,1,"Lion",7],[0,1,48,88.6,155.9,2,420,0,null,7],[0,1,538,82.3,157.5,2,420,0,null,7],[0,0,318,117.3,125.5,0,360,0,null,7],[0,1,228,120.3,126.5,0,420,0,null,7],[0,0,-51,115.4,148.9,4,360,0,null,7],[0,0,-27,123.1,139.8,4,360,0,null,7],[0,0,292,171.8,104.3,4,360,0,null,7],[0,0,822,121.3,187.8,4,360,0,null,7],[0,0,953,106.8,142.3,4,360,0,null,7],[0,0,1028,118,93.8,4,360,0,null,7],[0,0,1078,163.9,134,4,360,0,null,7],[0,0,1106,142.1,135.1,4,360,0,null,7],[0,0,1327,94,119.9,4,360,0,null,7],[0,0,1513,136.4,108.1,4,360,0,null,7],[0,0,1722,90.3,145.9,4,360,0,null,7],[0,0,1759,101.9,190,4,361,0,null,7],[0,0,1881,93.5,98.2,4,70,1,"Jakiro",7],[0,0,2191,77.7,120.5,4,null,0,null,7],[0,0,2203,94,119.8,4,null,0,null,7],[0,0,2256,118.1,94,4,null,0,null,7],[0,1,254,156.2,89.2,4,420,0,null,7],[0,1,762,70.5,165.4,4,420,0,null,7],[0,1,927,107.7,163.1,4,121,1,"Lion",7],[0,1,952,106.7,142,4,420,0,null,7],[0,1,976,124.1,98.4,4,420,0,null,7],[0,1,1021,110.1,78.7,4,421,0,null,7],[0,1,1089,152.8,121.6,4,420,0,null,7],[0,1,1105,142.5,134.7,4,420,0,null,7],[0,1,1324,90.3,118.1,4,420,0,null,7],[0,1,1343,127.8,113.2,4,420,0,null,7],[0,1,1368,147.2,136,4,420,0,null,7],[0,1,1388,165.2,112.3,4,420,0,null,7],[0,1,1394,175.5,102.8,4,420,0,null,7],[0,1,1516,137.8,103.2,4,244,1,"Jakiro",7],[0,1,1604,124.7,93.3,4,154,1,"Lion",7],[0,1,1710,79.9,134.5,4,420,0,null,7],[0,1,1796,83,97.9,4,420,0,null,7],[0,1,1810,93.8,88.3,4,420,0,null,7],[0,1,1879,95.6,101.1,4,73,1,"Jakiro",7],[0,1,1919,69,106.7,4,420,0,null,7],[0,1,1974,94.5,93.4,4,420,0,null,7],[0,1,2030,144.5,142.8,4,26,1,"npc_dota_creep_badguys_melee_upgraded",7],[0,1,2201,92,117.4,4,null,0,null,7],[0,1,2254,118.1,93.9,4,null,0,null,7],[0,1,2307,82.1,101.3,4,null,0,null,7],[0,1,2372,77.7,89.4,4,null,0,null,7],[0,1,2395,80.4,81.7,4,null,0,null,7],[0,1,2408,86.5,81.5,4,null,0,null,7],[0,0,455,119.2,123.8,0,360,0,null,8],[0,1,455,121.1,127.6,0,420,0,null,8],[0,0,89,80.3,178.9,4,361,0,null,8],[0,0,496,90,146,4,361,0,null,8],[0,0,955,136.3,108.1,4,360,0,null,8],[0,0,1012,70.6,157.3,4,360,0,null,8],[0,0,1097,163.8,134.1,4,360,0,null,8],[0,0,1191,126.2,163.9,4,360,0,null,8],[0,0,1534,94.2,119.9,4,263,1,"Hoodwink",8],[0,0,1670,118,93.9,4,299,1,"Lich",8],[0,0,1697,90.4,146.1,4,361,0,null,8],[0,0,1942,94.1,120.1,4,360,0,null,8],[0,0,2106,135.9,155.7,4,360,0,null,8],[0,0,2230,163.9,133.7,4,42,1,"Hoodwink",8],[0,0,2259,142.1,134.1,4,360,0,null,8],[0,0,2306,94,119.9,4,360,0,null,8],[0,0,2568,164.1,134.1,4,81,1,"Hoodwink",8],[0,0,2649,118.2,94.1,4,43,1,"Hoodwink",8],[0,0,2682,93.8,120.1,4,null,0,null,8],[0,0,2807,118,94.1,4,null,0,null,8],[0,1,41,156.2,88.9,4,68,1,"Hoodwink",8],[0,1,132,89.9,155.7,4,420,0,null,8],[0,1,560,128.7,114.1,4,371,1,"Hoodwink",8],[0,1,729,152.8,121.9,4,90,1,"Lich",8],[0,1,813,155.1,81.1,4,420,0,null,8],[0,1,949,127.6,113.2,4,420,0,null,8],[0,1,1060,142.1,131.6,4,420,0,null,8],[0,1,1089,153.2,121.8,4,380,1,"Lich",8],[0,1,1167,125.2,137,4,420,0,null,8],[0,1,1177,119.4,148.9,4,420,0,null,8],[0,1,1449,124.2,98.3,4,180,1,"Hoodwink",8],[0,1,1532,94.3,119.8,4,263,1,"Hoodwink",8],[0,1,1539,111.4,116.1,4,421,0,null,8],[0,1,1668,117.9,94.2,4,304,1,"Hoodwink",8],[0,1,1695,90.9,138.7,4,420,0,null,8],[0,1,1715,77.3,184.8,4,420,0,null,8],[0,1,1898,85.2,100.2,4,420,0,null,8],[0,1,1902,96.3,89.6,4,420,0,null,8],[0,1,2037,97.7,77.3,4,420,0,null,8],[0,1,2190,163.1,75.1,4,420,0,null,8],[0,1,2229,164,133.8,4,45,1,"Hoodwink",8],[0,1,2253,151.7,122.7,4,24,1,"Lich",8],[0,1,2282,117.8,94,4,420,0,null,8],[0,1,2313,96.6,131.2,4,420,0,null,8],[0,1,2391,152.8,121.5,4,281,1,"Hoodwink",8],[0,1,2412,159.9,156.1,4,43,1,"Lich",8],[0,1,2527,106,95.7,4,420,0,null,8],[0,1,2567,163.8,134.2,4,84,1,"Hoodwink",8],[0,1,2578,190.9,132.4,4,420,0,null,8],[0,1,2598,176.8,148,4,35,1,"Lich",8],[0,1,2680,94,120.1,4,421,0,null,8],[0,1,2709,124.9,96.6,4,null,0,null,8],[0,1,2736,152.8,121.7,4,81,1,"Lich",8],[0,1,2827,96.6,131.7,4,null,0,null,8],[0,0,-46,178.6,95.5,2,360,0,null,8],[0,0,591,152.1,88.7,2,361,0,null,8],[0,0,727,155.3,132.8,2,86,1,"Lich",8],[0,0,1135,144.3,135.5,2,360,0,null,8],[0,1,35,162.3,98.5,2,420,0,null,8],[0,1,187,156.4,87.2,2,420,0,null,8],[0,1,511,78.4,182.4,2,420,0,null,8],[0,1,702,164.3,92.8,2,420,0,null,8],[0,1,1102,166.5,128.3,2,420,0,null,8],[0,1,1934,93.9,120.1,2,420,0,null,8],[0,0,367,116.7,125.6,0,360,0,null,9],[0,1,368,121.2,127.3,0,420,0,null,9],[0,0,1618,118.3,185.8,2,360,0,null,9],[0,1,33,98.6,163.7,2,189,1,"Disruptor",9],[0,1,42,88.5,155.8,2,23,1,"Disruptor",9],[0,1,106,88.6,154.6,2,260,1,"Disruptor",9],[0,1,369,88.6,154.9,2,5,1,"Disruptor",9],[0,1,438,95.2,164.1,2,420,0,null,9],[0,0,483,145.3,89.3,1,360,0,null,9],[0,0,-51,137,124.4,4,360,0,null,9],[0,0,312,76.8,175.5,4,360,0,null,9],[0,0,666,140.3,134.2,4,360,0,null,9],[0,0,750,118,94.1,4,360,0,null,9],[0,0,916,90.4,145.9,4,361,0,null,9],[0,0,1305,94,119.9,4,122,1,"Mirana",9],[0,0,1561,94,120,4,132,1,"Mirana",9],[0,0,1599,102.6,103.4,4,205,1,"Disruptor",9],[0,0,1676,117.8,94.1,4,156,1,"Disruptor",9],[0,0,1751,111.3,164,4,251,1,"Disruptor",9],[0,0,1781,108.8,140.4,4,360,0,null,9],[0,0,1792,94.1,119.8,4,360,0,null,9],[0,0,1993,117.5,94.3,4,110,1,"Disruptor",9],[0,0,2176,117.9,94,4,70,1,"Mirana",9],[0,0,2192,113.7,129.8,4,360,0,null,9],[0,0,2320,149.9,116,4,360,0,null,9],[0,0,2557,175.9,113.1,4,360,0,null,9],[0,0,2583,176.1,73.1,4,360,0,null,9],[0,0,2758,93.9,97.8,4,360,0,null,9],[0,0,2786,117.8,93.7,4,240,1,"Disruptor",9],[0,0,3097,117.6,93.9,4,360,0,null,9],[0,0,3185,93.8,119.9,4,360,0,null,9],[0,0,3273,107.9,111.3,4,360,0,null,9],[0,0,3339,176.5,73.6,4,360,0,null,9],[0,0,3456,125.6,120.2,4,360,0,null,9],[0,0,3592,115.6,143.7,4,null,0,null,9],[0,1,27,152.6,89.6,4,30,1,"Mirana",9],[0,1,213,159,85.1,4,420,0,null,9],[0,1,749,123.2,97.5,4,420,0,null,9],[0,1,902,77.9,164.2,4,4,1,"Disruptor",9],[0,1,916,90.6,139.9,4,420,0,null,9],[0,1,1061,99.6,123.5,4,368,1,"Disruptor",9],[0,1,1159,78.7,158.1,4,420,0,null,9],[0,1,1163,82.9,166.7,4,9,1,"npc_dota_creep_badguys_melee",9],[0,1,1285,81,112,4,420,0,null,9],[0,1,1316,111.5,113.9,4,420,0,null,9],[0,1,1333,124.9,96.5,4,72,1,"Disruptor",9],[0,1,1360,132.4,122.4,4,421,0,null,9],[0,1,1486,93.7,166.2,4,420,0,null,9],[0,1,1548,95.9,89.2,4,420,0,null,9],[0,1,1552,85.6,100.9,4,420,0,null,9],[0,1,1559,93.8,117.1,4,420,0,null,9],[0,1,1598,102,103.2,4,207,1,"npc_dota_creep_badguys_ranged",9],[0,1,1674,124.5,94.2,4,160,1,"Disruptor",9],[0,1,1718,80,113.3,4,420,0,null,9],[0,1,1772,119.8,148.9,4,420,0,null,9],[0,1,1779,111.7,138.8,4,420,0,null,9],[0,1,1847,111.8,96.4,4,420,0,null,9],[0,1,1859,140.2,91.5,4,351,1,"Disruptor",9],[0,1,1867,149.9,89.6,4,420,0,null,9],[0,1,1972,96.6,131.4,4,420,0,null,9],[0,1,2050,124.3,162.5,4,24,1,"Disruptor",9],[0,1,2093,96.3,89.3,4,420,0,null,9],[0,1,2190,112.8,125.1,4,420,0,null,9],[0,1,2269,94.4,96.8,4,420,0,null,9],[0,1,2321,148.8,112.4,4,421,0,null,9],[0,1,2423,119,137.3,4,420,0,null,9],[0,1,2534,160.1,156.1,4,43,1,"Wraith King",9],[0,1,2559,176.1,112.8,4,420,0,null,9],[0,1,2730,95.8,91.8,4,420,0,null,9],[0,1,2733,87.2,100.6,4,420,0,null,9],[0,1,2785,120.5,88.5,4,420,0,null,9],[0,1,2831,165.6,121.7,4,420,0,null,9],[0,1,2849,164,133.8,4,322,1,"Disruptor",9],[0,1,2979,152.6,121.6,4,200,1,"Axe",9],[0,1,3175,67.8,120,4,420,0,null,9],[0,1,3182,92.9,118.1,4,420,0,null,9],[0,1,3238,97,92.8,4,420,0,null,9],[0,1,3259,123.8,97.5,4,420,0,null,9],[0,1,3272,108.3,111.7,4,421,0,null,9],[0,1,3338,177.1,73.7,4,420,0,null,9],[0,1,3450,131.2,122.9,4,420,0,null,9],[0,1,3541,96.5,131.6,4,421,0,null,9],[0,1,3591,110.9,144.8,4,420,0,null,9],[0,1,3818,159.9,177.9,4,null,0,null,9],[0,1,3852,178.3,170.3,4,null,0,null,9]],"clusters":{"radiant_obs":[{"x":117.9,"y":94.0,"games":5,"n":17,"times":[750,845,1028,1214,1619,1670,1676,1807,1953,1993,2176,2256,2418,2649,2786,2807,3097],"first":750,"med":1953,"dewarded":9,"life":240,"name":"Radiant bottom jungle, by the pond"},{"x":94.0,"y":119.9,"games":5,"n":14,"times":[1245,1305,1327,1534,1561,1685,1792,1942,2030,2203,2306,2608,2682,3185],"first":1245,"med":1867.0,"dewarded":4,"life":360.0,"name":"Radiant top jungle, centre of the ring"},{"x":90.2,"y":146.0,"games":4,"n":6,"times":[496,916,994,1506,1697,1722],"first":496,"med":1250.0,"dewarded":0,"life":361.0,"name":"Radiant top jungle, below the top Roshan pit"},{"x":93.7,"y":97.8,"games":4,"n":5,"times":[1881,2183,2723,2758,2836],"first":1881,"med":2723,"dewarded":3,"life":88.0,"name":"Radiant high ground, outside the base"},{"x":117.3,"y":125.0,"games":4,"n":4,"times":[318,367,455,2152],"first":318,"med":411.0,"dewarded":1,"life":360.0,"name":"Radiant side of mid, near the river"},{"x":163.9,"y":134.0,"games":3,"n":5,"times":[1078,1097,1831,2230,2568],"first":1078,"med":1831,"dewarded":2,"life":360,"name":"Dire bottom jungle, centre of the ring"},{"x":142.2,"y":134.7,"games":3,"n":4,"times":[666,1106,1135,2259],"first":666,"med":1120.5,"dewarded":0,"life":360.0,"name":"Dire jungle, beside mid lane"},{"x":136.3,"y":108.1,"games":3,"n":3,"times":[928,955,1513],"first":928,"med":955,"dewarded":0,"life":360,"name":"Radiant bank of the bottom river"},{"x":176.3,"y":73.4,"games":2,"n":3,"times":[1361,2583,3339],"first":1361,"med":2583,"dewarded":1,"life":360,"name":"Bottom lane, bottom-right corner"},{"x":137.1,"y":124.2,"games":2,"n":2,"times":[-58,-51],"first":-58,"med":-54.5,"dewarded":0,"life":360.0,"name":"Mid river, centre"},{"x":170.2,"y":105.4,"games":2,"n":2,"times":[292,364],"first":292,"med":328.0,"dewarded":0,"life":360.5,"name":"Bottom lane, Dire tier-1 area"},{"x":78.5,"y":185.5,"games":2,"n":2,"times":[708,773],"first":708,"med":740.5,"dewarded":0,"life":360.0,"name":"Top lane, top-left corner"}],"radiant_sen":[{"x":93.0,"y":118.8,"games":5,"n":10,"times":[1324,1532,1559,1683,1934,2028,2201,2604,2680,3182],"first":1324,"med":1981.0,"dewarded":3,"life":420,"name":"Radiant top jungle, centre of the ring"},{"x":88.8,"y":155.5,"games":5,"n":8,"times":[26,42,47,48,93,106,132,369],"first":26,"med":70.5,"dewarded":5,"life":266.5,"name":"Top river mouth, next to the top lane"},{"x":84.7,"y":100.3,"games":5,"n":8,"times":[1552,1796,1898,2093,2307,2388,2733,2852],"first":1552,"med":2200.0,"dewarded":1,"life":420.0,"name":"Radiant high ground, top-side ramp"},{"x":95.8,"y":88.4,"games":5,"n":7,"times":[1548,1725,1810,1902,2006,2093,2097],"first":1548,"med":1902,"dewarded":1,"life":420.0,"name":"Radiant high ground, bottom-side ramp"},{"x":152.6,"y":121.9,"games":4,"n":10,"times":[729,964,1089,1089,1360,1844,2253,2391,2736,2979],"first":729,"med":1602.0,"dewarded":8,"life":240.5,"name":"Dire bottom jungle, river entrance"},{"x":96.6,"y":131.4,"games":4,"n":8,"times":[676,806,1251,1387,1972,2313,2827,3541],"first":676,"med":1679.5,"dewarded":1,"life":420,"name":"Radiant top jungle, north side of the ring"},{"x":124.1,"y":97.6,"games":4,"n":7,"times":[749,848,976,1333,1449,2709,3259],"first":749,"med":1333,"dewarded":3,"life":389.5,"name":"Radiant bottom jungle, pond edge"},{"x":110.0,"y":114.3,"games":4,"n":6,"times":[1031,1316,1539,1720,1845,3272],"first":1031,"med":1629.5,"dewarded":0,"life":420.0,"name":"Radiant jungle, beside mid lane"},{"x":98.1,"y":163.0,"games":4,"n":5,"times":[7,32,33,438,752],"first":7,"med":33,"dewarded":3,"life":189,"name":"Top river, above the top Roshan pit"},{"x":155.5,"y":88.8,"games":4,"n":5,"times":[27,41,118,187,254],"first":27,"med":118,"dewarded":2,"life":420,"name":"Radiant bottom jungle, near the river"},{"x":121.0,"y":127.4,"games":4,"n":4,"times":[228,368,455,493],"first":228,"med":411.5,"dewarded":1,"life":420.0,"name":"Mid lane, Radiant side of the river"},{"x":80.8,"y":156.5,"games":4,"n":4,"times":[538,689,1016,1159],"first":538,"med":852.5,"dewarded":0,"life":420.0,"name":"Top lane, river crossing"}],"dire_obs":[{"x":118.1,"y":94.0,"games":5,"n":10,"times":[923,1105,1337,1517,1652,1706,1753,2307,2354,3017],"first":923,"med":1679.0,"dewarded":5,"life":125,"name":"Radiant bottom jungle, by the pond"},{"x":113.2,"y":129.8,"games":5,"n":6,"times":[-59,-57,-56,-55,-49,372],"first":-59,"med":-55.5,"dewarded":1,"life":360.0,"name":"Radiant river bank, between mid and top Roshan pit"},{"x":82.6,"y":132.9,"games":4,"n":5,"times":[184,875,972,1493,1890],"first":184,"med":972,"dewarded":0,"life":360,"name":"Radiant top jungle, west edge by top lane"},{"x":133.5,"y":88.0,"games":4,"n":5,"times":[640,955,1206,1453,2065],"first":640,"med":1206,"dewarded":2,"life":360,"name":"Radiant bottom jungle, by the bottom bridge"},{"x":149.8,"y":115.8,"games":4,"n":5,"times":[919,1278,1528,2221,2778],"first":919,"med":1528,"dewarded":1,"life":360.0,"name":"Dire bank of the bottom river"},{"x":70.0,"y":153.7,"games":4,"n":4,"times":[340,411,530,541],"first":340,"med":470.5,"dewarded":0,"life":360.0,"name":"Top lane, Radiant side of the river"},{"x":161.7,"y":101.8,"games":3,"n":4,"times":[464,494,552,1035],"first":464,"med":523.0,"dewarded":0,"life":360.0,"name":"Bottom river, near the bottom lane"},{"x":174.4,"y":83.4,"games":3,"n":3,"times":[559,576,876],"first":559,"med":576,"dewarded":0,"life":360,"name":"Bottom lane, Radiant tier-1 area"},{"x":94.0,"y":120.2,"games":3,"n":3,"times":[976,1133,2359],"first":976,"med":1133,"dewarded":2,"life":99,"name":"Radiant top jungle, centre of the ring"},{"x":135.9,"y":155.9,"games":3,"n":3,"times":[2176,2198,2625],"first":2176,"med":2198,"dewarded":0,"life":361,"name":"Dire top jungle, central cliff"},{"x":163.9,"y":134.0,"games":3,"n":3,"times":[2191,2200,2645],"first":2191,"med":2200,"dewarded":1,"life":360,"name":"Dire bottom jungle, centre of the ring"},{"x":80.9,"y":136.8,"games":2,"n":4,"times":[1023,1223,2379,2468],"first":1023,"med":1801.0,"dewarded":2,"life":280.0,"name":"Radiant top jungle, west edge by top lane"}],"dire_sen":[{"x":143.6,"y":109.1,"games":5,"n":10,"times":[1049,1129,1574,1587,1617,1699,2213,2278,2383,2841],"first":1049,"med":1658.0,"dewarded":0,"life":420.0,"name":"Bottom river, by the bottom Roshan pit"},{"x":118.0,"y":94.1,"games":5,"n":8,"times":[1103,1335,1507,1650,1741,2015,2273,2921],"first":1103,"med":1695.5,"dewarded":5,"life":224.0,"name":"Radiant bottom jungle, by the pond"},{"x":101.7,"y":166.4,"games":5,"n":7,"times":[11,13,14,19,28,192,767],"first":11,"med":19,"dewarded":1,"life":420,"name":"Dire top jungle, river entrance"},{"x":168.4,"y":99.1,"games":5,"n":6,"times":[28,29,38,49,50,391],"first":28,"med":43.5,"dewarded":1,"life":420.0,"name":"Bottom lane, Dire side of the river"},{"x":158.4,"y":90.2,"games":5,"n":6,"times":[45,45,46,55,82,461],"first":45,"med":50.5,"dewarded":5,"life":100.0,"name":"Radiant bottom jungle, near the river"},{"x":152.9,"y":122.2,"games":4,"n":10,"times":[917,1275,1473,1525,1576,2091,2212,2260,2543,2770],"first":917,"med":1833.5,"dewarded":2,"life":420.0,"name":"Dire bottom jungle, river entrance"},{"x":134.7,"y":102.9,"games":4,"n":9,"times":[812,847,1193,1363,1409,1483,1996,2274,2916],"first":812,"med":1409,"dewarded":6,"life":307.5,"name":"Radiant bank of the bottom river"},{"x":96.9,"y":131.0,"games":4,"n":8,"times":[742,760,967,1207,1484,1487,1871,2366],"first":742,"med":1345.5,"dewarded":5,"life":356.0,"name":"Radiant top jungle, north side of the ring"},{"x":92.4,"y":119.2,"games":4,"n":7,"times":[1079,1125,1491,1639,2076,2358,2482],"first":1079,"med":1639,"dewarded":3,"life":351.5,"name":"Radiant top jungle, centre of the ring"},{"x":131.2,"y":121.5,"games":4,"n":6,"times":[411,819,912,1171,1291,2452],"first":411,"med":1041.5,"dewarded":2,"life":420.0,"name":"Mid river, Dire side"},{"x":81.8,"y":157.9,"games":4,"n":5,"times":[365,632,694,930,946],"first":365,"med":694,"dewarded":1,"life":420,"name":"Top lane, river crossing"},{"x":158.4,"y":96.2,"games":4,"n":5,"times":[631,945,1065,1568,2803],"first":631,"med":1065,"dewarded":1,"life":420,"name":"Bottom river, Radiant bank"}]},"placers":["Master Knuckle","Nalle Puh","Slurpas","smorgasbooord","whix"],"games":[{"opp":"Lich Gaming","id":8937632324},{"opp":"Lich Gaming","id":8937738697},{"opp":"Färskt Kaffe","id":8954598694},{"opp":"Färskt Kaffe","id":8954720096},{"opp":"De 4 clownerna och Poppe","id":8986256934},{"opp":"De 4 clownerna och Poppe","id":8986370156},{"opp":"Dansbanders","id":9011443865},{"opp":"Dansbanders","id":9011562459},{"opp":"Assistenterna","id":9061841218},{"opp":"Assistenterna","id":9061958170}]};
+const NS = 'http://www.w3.org/2000/svg';
+const $ = q => document.querySelector(q);
+function h(tag, props, ...kids) {
+  const e = document.createElement(tag);
+  if (props) for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') e.className = v; else if (k === 'text') e.textContent = v; else if (k === 'style') e.style.cssText = v; else e.setAttribute(k, v);
+  }
+  for (const k of kids) if (k != null) e.append(k);
+  return e;
+}
+function s(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
+  if (parent) parent.append(e);
+  return e;
+}
+const mmss = t => { t = Math.round(t); const a = Math.abs(t); return (t < 0 ? '−' : '') + Math.floor(a / 60) + ':' + String(a % 60).padStart(2, '0'); };
+
+const tip = $('#tip');
+function showTip(ev, value, rows) {
+  tip.replaceChildren(h('div', { class: 'v', text: value }), ...rows.map(r => {
+    const row = h('div', { class: 'r' });
+    if (r.color) row.append(h('i', { style: 'background:' + r.color }));
+    row.append(document.createTextNode(r.text));
+    return row;
+  }));
+  tip.hidden = false;
+  const pad = 14, w = tip.offsetWidth, hh = tip.offsetHeight;
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - pad;
+  if (y + hh > innerHeight - 8) y = ev.clientY - hh - pad;
+  tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px';
+}
+const hideTip = () => { tip.hidden = true; };
+function tipFromEl(el, value, rows) {
+  el.addEventListener('pointermove', e => showTip(e, value, rows));
+  el.addEventListener('pointerleave', hideTip);
+  el.addEventListener('focus', () => { const r = el.getBoundingClientRect(); showTip({ clientX: r.right, clientY: r.top }, value, rows); });
+  el.addEventListener('blur', hideTip);
+}
+
+const WS = { side: 'dire', type: 'obs', phase: 'all', view: 'spots' };
+const PH = { 'all': [-999, 99999], 'pre': [-999, 0], '0-10': [0, 600], '10-20': [600, 1200], '20-30': [1200, 1800], '30+': [1800, 99999] };
+const ROUTINE = {
+  dire: { title: 'Their routine as Dire (you are Radiant)', items: [
+    ['−0:55', 'Observer on the Radiant river bank between mid and the top Roshan pit. 5 of 5 games; dewarded once.'],
+    ['0:10–0:55', 'Sentries in both lanes right after the horn: top river entrance of their jungle (0:19), bottom lane by the river (0:44) and inside the Radiant bottom jungle near the river (0:50, 5 of 5 games, dewarded 5 of 6 times — a pull-camp block).'],
+    ['5:40–9:00', 'Observer in the top lane on the Radiant side of the river (4 of 5 games). That is their safe lane.'],
+    ['7:45–9:40', 'Observers in the bottom river and by the Radiant bottom tier 1 (3 of 5 games).'],
+    ['15:00 →', 'Deep ward in the Radiant bottom jungle by the pond: all 5 games, 10 placements, half of them dewarded. Also the Radiant bottom bridge (from 10:40) and the west edge of the Radiant top jungle (never dewarded).'],
+    ['All game', '71% of their observers go into the Radiant half. If you are Radiant, keep sentries in your own jungle.'],
+  ] },
+  radiant: { title: 'Their routine as Radiant (you are Dire)', items: [
+    ['−0:55', 'First observer varies: mid river centre in 2 of 5 games, otherwise near mid or the bottom lane.'],
+    ['0:07–2:15', 'Sentries at the top river mouth by the top lane (5 of 5 games, dewarded 5 of 8), the top river above the Roshan pit (4 of 5) and their own bottom jungle (4 of 5).'],
+    ['5:00–7:35', 'Observer on the Radiant side of mid near the river (3 games); mid sentry around 6:50.'],
+    ['8:15–21:00', 'Observer in the Radiant top jungle below the top Roshan pit (4 of 5 games, never dewarded).'],
+    ['12:30 →', 'The pond spot in their own bottom jungle: all 5 games, 17 placements. Dewarded 9 times and re-placed every time. From 20:45 they add the centre of their top-jungle ring (5 of 5).'],
+    ['All game', 'Only 25% of their observers reach the Dire half (Dire jungle beside mid from 11:00, Dire bottom-jungle ring from 18:00). If you are Dire, your jungle is lightly watched.'],
+  ] },
+};
+function setPressed(groupId, val) { document.querySelectorAll('#' + groupId + ' button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === val))); }
+function hl(idx, on) {
+  document.querySelectorAll(`.spot[data-spot="${idx}"]`).forEach(e => e.classList.toggle('hl', on));
+  document.querySelectorAll(`#wardsvg g[data-spot="${idx}"] .ring`).forEach(e => { e.setAttribute('stroke', on ? '#ffffff' : '#0b0b0b'); e.setAttribute('stroke-width', on ? .9 : .45); });
+}
+function wardRender() {
+  setPressed('f-side', WS.side); setPressed('f-type', WS.type); setPressed('f-phase', WS.phase); setPressed('f-view', WS.view);
+  const svg = $('#wardsvg'); svg.replaceChildren();
+  const sideI = WS.side === 'radiant' ? 0 : 1, typeI = WS.type === 'obs' ? 0 : 1;
+  const [t0, t1] = PH[WS.phase];
+  const inPh = t => t >= t0 && t < t1;
+  const col = WS.type === 'obs' ? 'var(--obs)' : 'var(--sen)';
+  const u = x => x - 64, v = y => 191 - y;
+  const ws = D.wards.filter(w => w[0] === sideI && w[1] === typeI && inPh(w[2]));
+  const nGames = new Set(D.wards.filter(w => w[0] === sideI).map(w => w[9])).size;
+  const full = WS.type === 'obs' ? 360 : 420;
+  const typeName = WS.type === 'obs' ? 'Observer' : 'Sentry';
+  const lg = $('#ward-legend'); lg.replaceChildren();
+  if (WS.view === 'all') {
+    lg.append(h('span', { class: 'k' }, h('i', { class: 'dot', style: `background:${col};border:1.5px solid #0b0b0b` }), document.createTextNode(typeName + ' lasted its full time')),
+      h('span', { class: 'k' }, h('i', { class: 'dot', style: `border:2.5px solid ${col};background:rgba(0,0,0,.55)` }), document.createTextNode('Dewarded by the enemy')));
+  } else {
+    lg.append(h('span', { class: 'k' }, h('i', { class: 'dot', style: `background:${col};border:1.5px solid #0b0b0b;width:16px;height:16px` }), document.createTextNode('Recurring spot, numbered; bigger = used in more games')),
+      h('span', { class: 'k' }, h('i', { class: 'dot', style: `background:${col};opacity:.7;width:6px;height:6px` }), document.createTextNode('Single placement')));
+  }
+  $('#ward-count').textContent = `${ws.length} ${typeName.toLowerCase()} ${ws.length === 1 ? 'ward' : 'wards'} placed as ${WS.side === 'radiant' ? 'Radiant' : 'Dire'} in ${nGames} games${WS.phase === 'all' ? '' : ' in this time window'}.`;
+  if (WS.view === 'all') {
+    for (const w of ws) {
+      const g = D.games[w[9]];
+      const grp = s('g', { tabindex: 0 }, svg);
+      s('circle', { cx: u(w[3]), cy: v(w[4]), r: 2.2, fill: 'transparent' }, grp);
+      if (w[7]) s('circle', { cx: u(w[3]), cy: v(w[4]), r: 1.1, fill: 'rgba(0,0,0,.55)', stroke: col, 'stroke-width': .55 }, grp);
+      else s('circle', { cx: u(w[3]), cy: v(w[4]), r: 1.15, fill: col, stroke: '#0b0b0b', 'stroke-width': .3 }, grp);
+      const life = w[6] == null ? 'Lifetime unknown' : (w[7] ? `Dewarded after ${mmss(w[6])}${w[8] ? ' by ' + w[8] : ''}` : (w[6] >= full - 5 ? 'Lasted the full ' + mmss(full) : 'Gone after ' + mmss(w[6])));
+      tipFromEl(grp, mmss(w[2]) + ' · ' + typeName, [{ text: `${D.placers[w[5]]} vs ${g.opp}`, color: col }, { text: life }]);
+    }
+  }
+  const cl = (D.clusters[WS.side + '_' + WS.type] || []).map((c, i) => ({ ...c, idx: i + 1 })).filter(c => c.times.some(inPh));
+  if (WS.view === 'spots') {
+    for (const w of ws) s('circle', { cx: u(w[3]), cy: v(w[4]), r: .55, fill: col, opacity: .7 }, svg);
+    for (const c of [...cl].reverse()) {
+      const r = 1.6 + c.games * .38;
+      const grp = s('g', { tabindex: 0, 'data-spot': c.idx }, svg);
+      s('circle', { cx: u(c.x), cy: v(c.y), r: r + .8, fill: 'transparent' }, grp);
+      s('circle', { cx: u(c.x), cy: v(c.y), r, fill: col, stroke: '#0b0b0b', 'stroke-width': .45, class: 'ring' }, grp);
+      s('text', { x: u(c.x), y: v(c.y) + .95, 'text-anchor': 'middle', style: 'font-size:2.7px;font-weight:700;fill:#0b0b0b;font-family:var(--f-body)' }, grp).textContent = c.idx;
+      tipFromEl(grp, `#${c.idx} ${c.name}`, [{ text: `${c.games} of ${nGames} games · ${c.n} placements`, color: col }, { text: `Usually ${mmss(c.med)} (first ${mmss(c.first)}, last ${mmss(c.times[c.times.length - 1])})` }, { text: `Dewarded ${c.dewarded} of ${c.n}` }]);
+      grp.addEventListener('pointerenter', () => hl(c.idx, true)); grp.addEventListener('pointerleave', () => hl(c.idx, false));
+    }
+  }
+  const R = ROUTINE[WS.side];
+  $('#routine').replaceChildren(h('h3', { text: R.title }), h('ul', null, ...R.items.map(([t, txt]) => h('li', null, h('span', { class: 'mono', text: t }), h('span', { text: txt })))));
+  $('#spot-sub').textContent = `· ${WS.side === 'radiant' ? 'as Radiant' : 'as Dire'}, ${typeName.toLowerCase()}s${WS.phase === 'all' ? '' : ', ' + (WS.phase === 'pre' ? 'pre-horn' : WS.phase + ' min')}`;
+  const list = $('#spot-list'); list.replaceChildren();
+  if (!cl.length) list.append(h('p', { class: 'small', style: 'padding:10px 4px', text: 'No recurring spot in this time window. Switch to "Every ward" to see single placements.' }));
+  for (const c of cl) {
+    const tl = s('svg', { viewBox: '0 0 240 14', width: '100%', style: 'max-width:260px;display:block' });
+    s('line', { x1: 2, x2: 238, y1: 7, y2: 7, class: 'grid-l' }, tl);
+    for (const m of [0, 10, 20, 30, 40, 50]) s('line', { x1: 2 + m * 4, x2: 2 + m * 4, y1: 4, y2: 10, class: 'grid-l' }, tl);
+    for (const t of c.times) s('circle', { cx: 2 + Math.max(-1, Math.min(59, t / 60)) * 4, cy: 7, r: 2.6, fill: col, stroke: '#0b0b0b', 'stroke-width': .6, opacity: inPh(t) ? 1 : .3 }, tl);
+    const row = h('div', { class: 'spot', 'data-spot': c.idx, tabindex: 0 },
+      h('span', { class: 'num', style: `background:${col}`, text: c.idx }),
+      h('span', { class: 'nm', text: c.name }),
+      h('span', { class: 'det', text: `${c.games} of ${nGames} games · ${c.n} wards · usually ${mmss(c.med)} (${mmss(c.first)}–${mmss(c.times[c.times.length - 1])}) · dewarded ${c.dewarded}×` }),
+      h('span', { class: 'tl' }, tl));
+    row.addEventListener('pointerenter', () => hl(c.idx, true)); row.addEventListener('pointerleave', () => hl(c.idx, false));
+    row.addEventListener('focus', () => hl(c.idx, true)); row.addEventListener('blur', () => hl(c.idx, false));
+    list.append(row);
+  }
+  list.append(h('p', { class: 'small', style: 'padding-top:6px; font-size:12px', text: 'Timeline: each dot is one placement, 0 to 60 minutes. Faded dots fall outside the selected time window.' }));
+}
+for (const [gid, key] of [['f-side', 'side'], ['f-type', 'type'], ['f-phase', 'phase'], ['f-view', 'view']]) {
+  document.querySelectorAll('#' + gid + ' button').forEach(b => b.addEventListener('click', () => { WS[key] = b.dataset.v; hideTip(); wardRender(); try { localStorage.setItem('ls-wards', JSON.stringify(WS)); } catch (e) {} }));
+}
+try { const saved = JSON.parse(localStorage.getItem('ls-wards') || 'null'); if (saved) Object.assign(WS, saved); } catch (e) {}
+wardRender();
+</script>
+</body>
+</html>
