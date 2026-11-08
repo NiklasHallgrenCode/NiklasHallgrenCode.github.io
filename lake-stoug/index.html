@@ -47,6 +47,23 @@ header .lede { color: var(--ink-2); max-width: 70ch; }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .seg button:hover:not([aria-pressed="true"]) { background: var(--surface-2); }
 .tool-lbl { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.time-ctl { display: flex; align-items: center; gap: 8px 12px; flex: 1 1 440px; min-width: 0; flex-wrap: wrap; }
+.range { position: relative; flex: 1 1 240px; min-width: 200px; height: 40px; }
+.range .track { position: absolute; left: 0; right: 0; top: 12px; height: 4px; background: var(--line); border-radius: 2px; }
+.range .fill { position: absolute; top: 0; bottom: 0; background: var(--ink); border-radius: 2px; }
+.range input[type="range"] { position: absolute; left: 0; top: 0; width: 100%; height: 28px; margin: 0; background: transparent; pointer-events: none; -webkit-appearance: none; appearance: none; }
+.range input[type="range"]::-webkit-slider-runnable-track { background: transparent; height: 28px; }
+.range input[type="range"]::-moz-range-track { background: transparent; }
+.range input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; pointer-events: auto; width: 14px; height: 14px; margin-top: 5px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink); cursor: grab; }
+.range input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); border: 2px solid var(--ink); cursor: grab; }
+.range input[type="range"]:focus-visible { outline: none; }
+.range input[type="range"]:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+.range input[type="range"]:focus-visible::-moz-range-thumb { outline: 2px solid var(--accent); outline-offset: 2px; }
+.range .ticks { position: absolute; left: 0; right: 0; top: 24px; height: 14px; }
+.range .ticks span { position: absolute; transform: translateX(-50%); font-size: 11px; line-height: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+#t-label { font-family: var(--f-mono); font-size: 13px; min-width: 15ch; color: var(--ink); }
+.reset { font: inherit; font-size: 13px; font-weight: 600; color: var(--ink-2); background: transparent; border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+.reset:hover { background: var(--surface-2); }
 .ward-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 22px; align-items: start; }
 @media (max-width: 860px) { .ward-layout { grid-template-columns: minmax(0, 1fr); } }
 .mapbox { position: relative; width: 100%; max-width: 680px; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #2b3a2a; }
@@ -88,7 +105,7 @@ footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line);
 <div class="ward-tools" role="group" aria-label="Ward filters">
   <div><span class="tool-lbl">They are</span><span class="seg" id="f-side"><button type="button" data-v="radiant">Radiant</button><button type="button" data-v="dire">Dire</button></span></div>
   <div><span class="tool-lbl">Ward</span><span class="seg" id="f-type"><button type="button" data-v="obs">Observers</button><button type="button" data-v="sen">Sentries</button></span></div>
-  <div><span class="tool-lbl">Time</span><span class="seg" id="f-phase"><button type="button" data-v="all">All</button><button type="button" data-v="pre">Pre-horn</button><button type="button" data-v="0-10">0–10</button><button type="button" data-v="10-20">10–20</button><button type="button" data-v="20-30">20–30</button><button type="button" data-v="30+">30+</button></span></div>
+  <div class="time-ctl"><span class="tool-lbl">Time</span><div class="range" id="f-time"><div class="track"><div class="fill" id="t-fill"></div></div><input type="range" id="t-from" min="-120" max="3600" step="30" value="-120" aria-label="Placed from (game time)"><input type="range" id="t-to" min="-120" max="3600" step="30" value="3600" aria-label="Placed until (game time)"><div class="ticks" id="t-ticks" aria-hidden="true"></div></div><output id="t-label" for="t-from t-to"></output><button type="button" class="reset" id="t-reset">Whole game</button></div>
   <div><span class="tool-lbl">Show</span><span class="seg" id="f-view"><button type="button" data-v="spots">Recurring spots</button><button type="button" data-v="all">Every ward</button></span></div>
 </div>
 
@@ -162,8 +179,11 @@ function tipFromEl(el, value, rows) {
   el.addEventListener('blur', hideTip);
 }
 
-const WS = { side: 'dire', type: 'obs', phase: 'all', view: 'spots' };
-const PH = { 'all': [-999, 99999], 'pre': [-999, 0], '0-10': [0, 600], '10-20': [600, 1200], '20-30': [1200, 1800], '30+': [1800, 99999] };
+const TMIN = -120, TMAX = 3600;
+const WS = { side: 'dire', type: 'obs', t0: TMIN, t1: TMAX, view: 'spots' };
+const inWin = t => t >= WS.t0 && (WS.t1 >= TMAX || t <= WS.t1);
+const fullGame = () => WS.t0 <= TMIN && WS.t1 >= TMAX;
+const rangeLabel = () => fullGame() ? 'Whole game' : (WS.t0 <= TMIN ? 'Start' : mmss(WS.t0)) + ' → ' + (WS.t1 >= TMAX ? 'End' : mmss(WS.t1));
 const ROUTINE = {
   dire: { title: 'Their routine as Dire (you are Radiant)', items: [
     ['−0:55', 'Observer on the Radiant river bank between mid and the top Roshan pit. 5 of 5 games; dewarded once.'],
@@ -188,11 +208,10 @@ function hl(idx, on) {
   document.querySelectorAll(`#wardsvg g[data-spot="${idx}"] .ring`).forEach(e => { e.setAttribute('stroke', on ? '#ffffff' : '#0b0b0b'); e.setAttribute('stroke-width', on ? .9 : .45); });
 }
 function wardRender() {
-  setPressed('f-side', WS.side); setPressed('f-type', WS.type); setPressed('f-phase', WS.phase); setPressed('f-view', WS.view);
+  setPressed('f-side', WS.side); setPressed('f-type', WS.type); setPressed('f-view', WS.view);
   const svg = $('#wardsvg'); svg.replaceChildren();
   const sideI = WS.side === 'radiant' ? 0 : 1, typeI = WS.type === 'obs' ? 0 : 1;
-  const [t0, t1] = PH[WS.phase];
-  const inPh = t => t >= t0 && t < t1;
+  const inPh = inWin;
   const col = WS.type === 'obs' ? 'var(--obs)' : 'var(--sen)';
   const u = x => x - 64, v = y => 191 - y;
   const ws = D.wards.filter(w => w[0] === sideI && w[1] === typeI && inPh(w[2]));
@@ -207,7 +226,7 @@ function wardRender() {
     lg.append(h('span', { class: 'k' }, h('i', { class: 'dot', style: `background:${col};border:1.5px solid #0b0b0b;width:16px;height:16px` }), document.createTextNode('Recurring spot, numbered; bigger = used in more games')),
       h('span', { class: 'k' }, h('i', { class: 'dot', style: `background:${col};opacity:.7;width:6px;height:6px` }), document.createTextNode('Single placement')));
   }
-  $('#ward-count').textContent = `${ws.length} ${typeName.toLowerCase()} ${ws.length === 1 ? 'ward' : 'wards'} placed as ${WS.side === 'radiant' ? 'Radiant' : 'Dire'} in ${nGames} games${WS.phase === 'all' ? '' : ' in this time window'}.`;
+  $('#ward-count').textContent = `${ws.length} ${typeName.toLowerCase()} ${ws.length === 1 ? 'ward' : 'wards'} placed as ${WS.side === 'radiant' ? 'Radiant' : 'Dire'} in ${nGames} games${fullGame() ? '' : ' in this time window'}.`;
   if (WS.view === 'all') {
     for (const w of ws) {
       const g = D.games[w[9]];
@@ -234,7 +253,7 @@ function wardRender() {
   }
   const R = ROUTINE[WS.side];
   $('#routine').replaceChildren(h('h3', { text: R.title }), h('ul', null, ...R.items.map(([t, txt]) => h('li', null, h('span', { class: 'mono', text: t }), h('span', { text: txt })))));
-  $('#spot-sub').textContent = `· ${WS.side === 'radiant' ? 'as Radiant' : 'as Dire'}, ${typeName.toLowerCase()}s${WS.phase === 'all' ? '' : ', ' + (WS.phase === 'pre' ? 'pre-horn' : WS.phase + ' min')}`;
+  $('#spot-sub').textContent = `· ${WS.side === 'radiant' ? 'as Radiant' : 'as Dire'}, ${typeName.toLowerCase()}s${fullGame() ? '' : ', ' + rangeLabel()}`;
   const list = $('#spot-list'); list.replaceChildren();
   if (!cl.length) list.append(h('p', { class: 'small', style: 'padding:10px 4px', text: 'No recurring spot in this time window. Switch to "Every ward" to see single placements.' }));
   for (const c of cl) {
@@ -253,10 +272,27 @@ function wardRender() {
   }
   list.append(h('p', { class: 'small', style: 'padding-top:6px; font-size:12px', text: 'Timeline: each dot is one placement, 0 to 60 minutes. Faded dots fall outside the selected time window.' }));
 }
-for (const [gid, key] of [['f-side', 'side'], ['f-type', 'type'], ['f-phase', 'phase'], ['f-view', 'view']]) {
-  document.querySelectorAll('#' + gid + ' button').forEach(b => b.addEventListener('click', () => { WS[key] = b.dataset.v; hideTip(); wardRender(); try { localStorage.setItem('ls-wards', JSON.stringify(WS)); } catch (e) {} }));
+const tf = $('#t-from'), tt = $('#t-to');
+const thumbPos = p => `calc(9px + (100% - 18px) * ${p})`;
+const saveWS = () => { try { localStorage.setItem('ls-wards-2', JSON.stringify(WS)); } catch (e) {} };
+function syncSlider() {
+  tf.value = WS.t0; tt.value = WS.t1;
+  const a = (WS.t0 - TMIN) / (TMAX - TMIN), b = (WS.t1 - TMIN) / (TMAX - TMIN);
+  const fill = $('#t-fill'); fill.style.left = thumbPos(a); fill.style.width = `calc((100% - 18px) * ${b - a})`;
+  tf.style.zIndex = WS.t0 > TMAX - 600 ? 3 : 2; tt.style.zIndex = 2;
+  tf.setAttribute('aria-valuetext', WS.t0 <= TMIN ? 'Start' : mmss(WS.t0));
+  tt.setAttribute('aria-valuetext', WS.t1 >= TMAX ? 'End' : mmss(WS.t1));
+  $('#t-label').textContent = rangeLabel();
 }
-try { const saved = JSON.parse(localStorage.getItem('ls-wards') || 'null'); if (saved) Object.assign(WS, saved); } catch (e) {}
+$('#t-ticks').append(...[0, 10, 20, 30, 40, 50, 60].map(m => h('span', { style: 'left:' + thumbPos((m * 60 - TMIN) / (TMAX - TMIN)), text: m === 60 ? '60+' : String(m) })));
+tf.addEventListener('input', () => { WS.t0 = Math.min(+tf.value, WS.t1 - 60); syncSlider(); hideTip(); wardRender(); saveWS(); });
+tt.addEventListener('input', () => { WS.t1 = Math.max(+tt.value, WS.t0 + 60); syncSlider(); hideTip(); wardRender(); saveWS(); });
+$('#t-reset').addEventListener('click', () => { WS.t0 = TMIN; WS.t1 = TMAX; syncSlider(); wardRender(); saveWS(); });
+for (const [gid, key] of [['f-side', 'side'], ['f-type', 'type'], ['f-view', 'view']]) {
+  document.querySelectorAll('#' + gid + ' button').forEach(b => b.addEventListener('click', () => { WS[key] = b.dataset.v; hideTip(); wardRender(); saveWS(); }));
+}
+try { const saved = JSON.parse(localStorage.getItem('ls-wards-2') || 'null'); if (saved) Object.assign(WS, saved); } catch (e) {}
+syncSlider();
 wardRender();
 </script>
 </body>
