@@ -42,6 +42,8 @@ p { margin: 0; }
 header { padding-block: 32px 18px; display: grid; gap: 10px; }
 header h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(44px, 8vw, 84px); line-height: .9; text-transform: uppercase; }
 header .lede { color: var(--ink-2); max-width: 70ch; }
+header .pagelinks { display: flex; flex-wrap: wrap; gap: 4px 18px; font-weight: 600; }
+header .pagelinks a { text-decoration-color: var(--accent); }
 .ward-tools { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding-block: 14px; border-block: 1px solid var(--line); margin-bottom: 18px; }
 .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
 .seg button { font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-2); background: transparent; border: 0; padding: 7px 12px; cursor: pointer; border-right: 1px solid var(--line); }
@@ -177,6 +179,7 @@ h4 { margin: 0; font-size: 16px; }
 <header>
   <div class="eyebrow">E-Sparven Season 6 · Scouting</div>
   <h1>De 4 clownerna och Poppe</h1>
+  <nav class="pagelinks" aria-label="Related pages"><a href="draft-book/">Draft book: lanes, bans and draft plans for patch 7.41f →</a></nav>
 </header>
 
 <div class="tabs" role="tablist" aria-label="Sections">

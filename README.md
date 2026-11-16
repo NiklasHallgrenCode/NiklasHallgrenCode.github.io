@@ -5,3 +5,4 @@ Personal GitHub Pages site.
 - [Lake Stoug ward map](lake-stoug/) – where Lake Stoug place their observer and sentry wards in E-Sparven Season 6 (Dota 2).
 - [Dansbanders scouting](dansbanders/) – ward map, level 1 smokes and hero positions before the 0:00 horn, and draft analysis for Dansbanders in E-Sparven Season 6 (Dota 2).
 - [De 4 clownerna och Poppe scouting](clownerna/) – the same ward map, level 1 and draft analysis for our own team, to see what opponents can read from us.
+- [De 4 clownerna och Poppe draft book](clownerna/draft-book/) – hero pools, lane combos, bans and draft plans for patch 7.41f, built from our league games, pro drafts and Divine/Immortal ranked games.
